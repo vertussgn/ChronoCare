@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ChronoCare - Üdvözöljük</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .hero { background: linear-gradient(135deg, #0d6efd, #0099ff); color: white; padding: 100px 0; text-align: center; }
+        .role-card { transition: transform 0.3s; cursor: pointer; }
+        .role-card:hover { transform: scale(1.05); }
+    </style>
+</head>
+<body>
+
+<div class="hero mb-5">
+    <h1>💙 Üdvözli a ChronoCare</h1>
+    <p class="lead">IoT Alapú Egészségügyi Monitoring Rendszer</p>
+</div>
+
+<div class="container text-center">
+    <div class="row justify-content-center">
+        <!-- Páciens Kártya -->
+        <div class="col-md-4">
+            <div class="card role-card shadow p-4 mb-4">
+                <h3>👤 Páciens Vagyok</h3>
+                <p>Belépés a saját mérések megtekintéséhez.</p>
+                <a href="/login?role=PATIENT" class="btn btn-outline-primary">Belépés</a>
+                <a href="/register" class="btn btn-link">Regisztráció</a>
+            </div>
+        </div>
+
+        <!-- Orvos Kártya -->
+        <div class="col-md-4">
+            <div class="card role-card shadow p-4 mb-4 bg-light">
+                <h3>🩺 Orvos Vagyok</h3>
+                <p>Páciensek felügyelete és riasztások kezelése.</p>
+                <a href="/login?role=DOCTOR" class="btn btn-outline-dark">Belépés</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
