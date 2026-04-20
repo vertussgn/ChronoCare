@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -75,7 +76,8 @@ public class HomeController {
             if (pat.isPresent() && pat.get().getPassword().equals(password)) {
                 session.setAttribute("user", pat.get());
                 session.setAttribute("role", "PATIENT");
-                return "redirect:/doctor/dashboard/" + pat.get().getId();
+                // Páciens a saját, elkülönített nézetére kerül
+                return "redirect:/patient/dashboard/" + pat.get().getId();
             }
         }
 
@@ -83,7 +85,7 @@ public class HomeController {
         return "login";
     }
 
-    // Orvosi pácienslista
+    // Orvosi pácienslista – csak DOCTOR szerepkörrel érhető el
     @GetMapping("/doctor/home")
     public String doctorHome(Model model, HttpSession session) {
         Doctor currentDoctor = (Doctor) session.getAttribute("user");
@@ -96,6 +98,27 @@ public class HomeController {
         model.addAttribute("doctor", currentDoctor);
         model.addAttribute("patients", patientRepository.findByDoctor(currentDoctor));
         return "doctor_list";
+    }
+
+    // Páciens saját adatlapja – csak PATIENT szerepkörrel, csak saját ID-val
+    @GetMapping("/patient/dashboard/{patientId}")
+    public String patientDashboard(@PathVariable Long patientId,
+                                   Model model,
+                                   HttpSession session) {
+        String role = (String) session.getAttribute("role");
+        Patient sessionPatient = (Patient) session.getAttribute("user");
+
+        // Szerepkör és azonosító ellenőrzése
+        if (sessionPatient == null || !"PATIENT".equals(role)
+                || !sessionPatient.getId().equals(patientId)) {
+            return "redirect:/login";
+        }
+
+        Patient freshPatient = patientRepository.findById(patientId).orElseThrow();
+
+        model.addAttribute("patient", freshPatient);
+        model.addAttribute("measurements", freshPatient.getMeasurements());
+        return "patient_dashboard";
     }
 
     // Kijelentkezés

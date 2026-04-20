@@ -15,17 +15,34 @@ public class MonitoringService {
     private MeasurementRepository measurementRepository;
 
     // Új mérés rögzítése és ellenőrzése
-    public void recordMeasurement(Patient patient, String type, double value) {
+    public boolean recordMeasurement(Patient patient, String type, double value) {
+
+        if (!isValidValue(type, value)) {
+            System.out.println("✗ Érvénytelen mérési adat elutasítva: " + type + " = " + value);
+            return false;
+        }
+
         HealthMeasurement measurement = new HealthMeasurement();
         measurement.setPatient(patient);
         measurement.setType(type);
         measurement.setMeasuredValue(value);
         measurement.setTimestamp(LocalDateTime.now());
-
-        // Életkorfüggő riasztási logika
         measurement.setCritical(checkIfCritical(patient, type, value));
-
         measurementRepository.save(measurement);
+        return true;
+    }
+
+    // Biológiai határok ellenőrzése – negatív és extrém értékek kiszűrése
+    private boolean isValidValue(String type, double value) {
+        if (value < 0) return false;
+        switch (type) {
+            case "Vérnyomás":  return value >= 40  && value <= 300;
+            case "Pulzus":     return value >= 10  && value <= 300;
+            case "Testhő":     return value >= 25.0 && value <= 45.0;
+            case "Véroxigén":  return value >= 50.0 && value <= 100.0;
+            case "Vércukor":   return value >= 0.5  && value <= 50.0;
+            default:           return true;
+        }
     }
 
     // Küszöbértékek vizsgálata – életkor figyelembevételével
@@ -37,16 +54,12 @@ public class MonitoringService {
                 double minSystolic = getMinSystolicByAge(age);
                 return value > maxSystolic || value < minSystolic;
             case "Pulzus":
-                // Standard orvosi tartomány: 60-100 BPM
                 return value > 100 || value < 60;
             case "Testhő":
-                // Lázas állapot
                 return value > 38.0 || value < 36.0;
             case "Véroxigén":
-                // Hipoxia gyanúja 90% alatt
                 return value < 90.0;
             case "Vércukor":
-                // 7.8 felett vagy 3.9 alatt kritikus
                 return value > 7.8 || value < 3.9;
             default:
                 return false;

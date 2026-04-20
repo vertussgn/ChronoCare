@@ -33,6 +33,9 @@
         </div>
     </div>
 
+    <!-- Validációs hibaüzenet – érvénytelen adat beküldésekor jelenik meg -->
+    <div th:if="${errorMessage}" class="alert alert-danger mt-2" th:text="${errorMessage}"></div>
+
     <div class="row">
         <div class="col-md-4">
             <div class="card shadow-sm mb-4">
