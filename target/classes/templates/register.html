@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Regisztráció</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light container mt-5">
+<div class="card shadow p-4 mx-auto" style="max-width: 500px;">
+  <h3 class="text-center">📝 Páciens Regisztráció</h3>
+  <form action="/register" method="post" th:object="${patient}">
+    <div class="mb-3">
+      <label>Teljes Név <span class="text-danger">*</span></label>
+      <input type="text" th:field="*{name}" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label>Életkor <span class="text-danger">*</span></label>
+      <input type="number" th:field="*{age}" class="form-control" required min="0" max="130">
+    </div>
+    <div class="mb-3">
+      <label>TAJ szám <span class="text-danger">*</span></label>
+      <input type="text" th:field="*{tajNumber}" class="form-control"
+             placeholder="123456789"
+             pattern="[0-9]{9}"
+             title="A TAJ szám 9 számjegyből áll (szóköz és kötőjel nélkül)"
+             maxlength="9"
+             required>
+      <div class="form-text text-muted">9 számjegy, szóköz és kötőjel nélkül.</div>
+    </div>
+    <div class="mb-3">
+      <label>Diagnózis <span class="text-muted small">(opcionális)</span></label>
+      <input type="text" th:field="*{diagnosis}" class="form-control" placeholder="Pl. Magas vérnyomás">
+    </div>
+    <div class="mb-3">
+      <label>Válasszon kezelőorvost <span class="text-danger">*</span></label>
+      <select name="doctorId" class="form-select" required>
+        <option value="" disabled selected>— Válasszon orvost —</option>
+        <option th:each="doc : ${doctors}" th:value="${doc.id}" th:text="${doc.name}"></option>
+      </select>
+    </div>
+    <hr>
+    <p class="small text-muted mb-2">Belépési adatok</p>
+    <div class="mb-3">
+      <label>Felhasználónév <span class="text-danger">*</span></label>
+      <input type="text" th:field="*{username}" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label>Jelszó <span class="text-danger">*</span></label>
+      <input type="password" th:field="*{password}" class="form-control" minlength="4" required>
+      <div class="form-text text-muted">Minimum 4 karakter.</div>
+    </div>
+    <button type="submit" class="btn btn-success w-100">Regisztráció</button>
+    <div class="text-center mt-2"><a href="/login" class="small">Már van fiókom → Belépés</a></div>
+  </form>
+</div>
+</body>
+</html>

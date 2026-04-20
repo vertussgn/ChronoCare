@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>ChronoCare - Orvosi Műszerfal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .alert-row { background-color: #ffe6e6 !important; color: #cc0000; font-weight: bold; border-left: 5px solid red; }
+        .header-bg { background-color: #0d6efd; color: white; padding: 20px; border-radius: 5px; margin-bottom: 20px; }
+    </style>
+</head>
+<body class="bg-light">
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <a href="/logout" class="btn btn-outline-danger btn-sm">Kijelentkezés</a>
+    </div>
+
+    <div class="header-bg shadow-sm">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1>🏥 Páciens Adatlap</h1>
+                <h4>Név: <span th:text="${patient.name}"></span> (Kor: <span th:text="${patient.age}"></span>)</h4>
+                <p class="mb-1"><i>Diagnózis: <span th:text="${patient.diagnosis}"></span></i></p>
+                <p class="mb-0 small">TAJ szám:
+                    <span class="badge bg-light text-dark"
+                          th:text="${patient.tajNumber != null ? patient.tajNumber : 'Nincs megadva'}"></span>
+                </p>
+            </div>
+            <div class="col-md-4 text-end">
+                <span class="badge bg-warning text-dark fs-6">ID: <span th:text="${patient.id}"></span></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-dark text-white">⚙️ IoT Eszköz Szimulátor</div>
+                <div class="card-body">
+                    <p class="small text-muted">Manuális adatbeküldés teszteléshez. A Wokwi ESP32 automatikusan küldi a vérnyomást MQTT-en.</p>
+                    <form action="/simulate/measurement" method="post">
+                        <input type="hidden" name="patientId" th:value="${patient.id}">
+                        <div class="mb-3">
+                            <label class="form-label">Mérés Típusa:</label>
+                            <select name="type" class="form-select">
+                                <option value="Vérnyomás">Vérnyomás (sys, Hgmm)</option>
+                                <option value="Pulzus">Pulzus (BPM)</option>
+                                <option value="Vércukor">Vércukor (mmol/l)</option>
+                                <option value="Véroxigén">Véroxigén (SpO₂ %)</option>
+                                <option value="Testhő">Testhőmérséklet (°C)</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Mért Érték:</label>
+                            <input type="number" step="0.1" name="value" class="form-control" placeholder="Pl. 135" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">📡 Adat Beküldése</button>
+                    </form>
+                    <div class="mt-3 p-2 bg-light rounded border small text-muted">
+                        <strong>Normál tartományok:</strong><br>
+                        Vérnyomás: 100–140 Hgmm<br>Pulzus: 60–100 BPM<br>
+                        Vércukor: 3.9–7.8 mmol/l<br>Véroxigén: ≥90%<br>Testhő: 36.0–38.0 °C
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <span>📊 Mérési Előzmények</span>
+                    <span class="badge bg-danger"
+                          th:if="${measurements != null and !#lists.isEmpty(measurements)}"
+                          th:text="'⚠️ ' + ${#lists.size(measurements.?[critical == true])} + ' riasztás'"></span>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                        <tr><th>Időpont</th><th>Típus</th><th>Érték</th><th>Státusz</th></tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="m : ${measurements}" th:classappend="${m.critical} ? 'alert-row' : ''">
+                            <td th:text="${#temporals.format(m.timestamp, 'yyyy-MM-dd HH:mm:ss')}"></td>
+                            <td th:text="${m.type}"></td>
+                            <td th:text="${m.measuredValue}"></td>
+                            <td>
+                                <span th:if="${m.critical}" class="badge bg-danger">⚠️ RIASZTÁS</span>
+                                <span th:unless="${m.critical}" class="badge bg-success">Normál</span>
+                            </td>
+                        </tr>
+                        <tr th:if="${measurements == null or #lists.isEmpty(measurements)}">
+                            <td colspan="4" class="text-center text-muted py-3">Még nincs rögzített mérés.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
