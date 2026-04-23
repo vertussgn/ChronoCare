@@ -83,9 +83,8 @@ public class MQTTListener {
     }
 
     /**
-     * Az Arduino/Wokwi által küldött típusneveket normalizálja.
+     * A Wokwi által küldött típusneveket normalizálja.
      *
-     * Arduino küld:        normalizeType visszaad:
      *   "blood_pressure"  →  "Vérnyomás"
      *   "heart_rate"      →  "Pulzus"
      *   "blood_sugar"     →  "Vércukor"

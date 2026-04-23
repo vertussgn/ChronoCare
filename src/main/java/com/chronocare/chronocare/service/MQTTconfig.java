@@ -17,7 +17,6 @@ public class MQTTconfig {
     private static final String BROKER_URL = "tcp://broker.hivemq.com:1883";
 
     // Wildcard topic: minden beteg mérési adatát fogadja
-    // Arduino küld: "patient/1/measurements"
     // Szerver feliratkozik: "patient/+/measurements"  (+  = bármely patientId)
     private static final String TOPIC = "patient/+/measurements";
     @Bean
@@ -58,8 +57,6 @@ public class MQTTconfig {
     @Bean
     public MessageProducer inbound() {
         // Egyedi client ID futási időben generálva
-        // FONTOS: static final-ban a System.currentTimeMillis() compile-time
-        // értékelődne ki, ezért itt, a @Bean metóduson belül generáljuk
         String clientId = "chronocare-server-" + System.currentTimeMillis();
 
         MqttPahoMessageDrivenChannelAdapter adapter =

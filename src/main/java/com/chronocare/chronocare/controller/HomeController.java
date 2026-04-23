@@ -6,6 +6,7 @@ import com.chronocare.chronocare.repository.DoctorRepository;
 import com.chronocare.chronocare.repository.PatientRepository;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,6 +24,10 @@ public class HomeController {
 
     @Autowired
     private DoctorRepository doctorRepository;
+
+    // ✅ BCrypt jelszókódoló – SecurityConfig.java definiálja
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     // Főoldal
     @GetMapping("/")
@@ -44,7 +49,7 @@ public class HomeController {
         return "register";
     }
 
-    // Regisztráció feldolgozása
+    // ✅ Regisztráció feldolgozása – jelszó BCrypt-tel titkosítva kerül az adatbázisba
     @PostMapping("/register")
     public String registerPatient(Patient patient, @RequestParam Long doctorId) {
         if (patient.getDiagnosis() == null || patient.getDiagnosis().isBlank()) {
@@ -52,11 +57,15 @@ public class HomeController {
         }
         Doctor doc = doctorRepository.findById(doctorId).orElseThrow();
         patient.setDoctor(doc);
+
+        // ✅ KRITIKUS JAVÍTÁS: jelszó titkosítása – nyílt szöveg SOHA nem kerül az adatbázisba
+        patient.setPassword(passwordEncoder.encode(patient.getPassword()));
+
         patientRepository.save(patient);
         return "redirect:/login?registered";
     }
 
-    // Belépés feldolgozása – orvos vagy páciens szerepkörrel
+    // ✅ Belépés feldolgozása – BCrypt matches() hash összehasonlítással (nem equals()!)
     @PostMapping("/perform_login")
     public String performLogin(@RequestParam String username,
                                @RequestParam String password,
@@ -66,17 +75,17 @@ public class HomeController {
 
         if (role.equals("DOCTOR")) {
             Optional<Doctor> doc = doctorRepository.findByUsername(username);
-            if (doc.isPresent() && doc.get().getPassword().equals(password)) {
+            // ✅ passwordEncoder.matches(beírt jelszó, tárolt hash) – biztonságos összehasonlítás
+            if (doc.isPresent() && passwordEncoder.matches(password, doc.get().getPassword())) {
                 session.setAttribute("user", doc.get());
                 session.setAttribute("role", "DOCTOR");
                 return "redirect:/doctor/home";
             }
         } else {
             Optional<Patient> pat = patientRepository.findByUsername(username);
-            if (pat.isPresent() && pat.get().getPassword().equals(password)) {
+            if (pat.isPresent() && passwordEncoder.matches(password, pat.get().getPassword())) {
                 session.setAttribute("user", pat.get());
                 session.setAttribute("role", "PATIENT");
-                // Páciens a saját, elkülönített nézetére kerül
                 return "redirect:/patient/dashboard/" + pat.get().getId();
             }
         }
@@ -108,7 +117,7 @@ public class HomeController {
         String role = (String) session.getAttribute("role");
         Patient sessionPatient = (Patient) session.getAttribute("user");
 
-        // Szerepkör és azonosító ellenőrzése
+        // Szerepkör és azonosító ellenőrzése – más páciens adatai nem elérhetők
         if (sessionPatient == null || !"PATIENT".equals(role)
                 || !sessionPatient.getId().equals(patientId)) {
             return "redirect:/login";
