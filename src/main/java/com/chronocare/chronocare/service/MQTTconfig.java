@@ -10,19 +10,36 @@ import org.springframework.integration.mqtt.core.MqttPahoClientFactory;
 import org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter;
 import org.springframework.messaging.MessageChannel;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+
 @Configuration
 public class MQTTconfig {
 
-    // HiveMQ publikus broker – ugyanaz amit a Wokwi ESP32 használ
-    private static final String BROKER_URL = "tcp://broker.hivemq.com:1883";
+    // TLS titkosított kapcsolat (ssl://) a nyílt tcp:// helyett
+    // HiveMQ publikus broker TLS portja: 8883
+    private static final String BROKER_URL = "ssl://broker.hivemq.com:8883";
 
     // Wildcard topic: minden beteg mérési adatát fogadja
-    // Szerver feliratkozik: "patient/+/measurements"  (+  = bármely patientId)
+    // Szerver feliratkozik: "patient/+/measurements"  (+ = bármely patientId)
     private static final String TOPIC = "patient/+/measurements";
+
     @Bean
     public MqttConnectOptions mqttConnectOptions() {
         MqttConnectOptions options = new MqttConnectOptions();
         options.setServerURIs(new String[]{ BROKER_URL });
+
+        //TLS SSLSocketFactory beállítása
+        try {
+            SSLContext sslContext = SSLContext.getInstance("TLSv1.3");
+            sslContext.init(null, null, null); // JVM alapértelmezett truststore
+            SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
+            options.setSocketFactory(sslSocketFactory);
+        } catch (NoSuchAlgorithmException | KeyManagementException e) {
+            throw new RuntimeException("TLS inicializálási hiba – MQTT kapcsolat nem indítható", e);
+        }
 
         // Automatikus újracsatlakozás
         options.setAutomaticReconnect(true);
@@ -40,7 +57,7 @@ public class MQTTconfig {
     }
 
     /**
-     * MqttPahoClientFactory: a kapcsolati beállításokat átadja az adapternek.
+     * MqttPahoClientFactory: a kapcsolati beállításokat (beleértve a TLS-t) átadja az adapternek.
      */
     @Bean
     public MqttPahoClientFactory mqttClientFactory() {
