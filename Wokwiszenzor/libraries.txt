@@ -1,0 +1,10 @@
+# Wokwi könyvtárfájl – ez telepíti automatikusan a szükséges Arduino könyvtárakat
+# A fájlt a sketch.ino mellé kell elhelyezni a Wokwi projektben
+#
+# PubSubClient.h "No such file or directory" hiba megoldása:
+# A Wokwi-nak meg kell mondani melyik könyvtárakat töltse le,
+# különben nem találja a headerfájlokat.
+ 
+PubSubClient@2.8
+ArduinoJson@6.21.3
+ 
