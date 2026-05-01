@@ -186,8 +186,8 @@ platformon futtatható, és valódi MQTT üzeneteket küld a szervernek.
 
   A kódban a PATIENT_IDS[] tömbben kell megadni az adatbázisban lévő beteg ID-kat:
 
-    const int PATIENT_IDS[]  = {8, 9};   // Cseréld le a tényleges beteg ID-kra!
-    const int PATIENT_AGES[] = {65, 42}; // A betegek kora (riasztási küszöbhöz)
+    const int PATIENT_IDS[]  = {8, 9};   
+    const int PATIENT_AGES[] = {65, 42}; 
     const int PATIENT_COUNT  = 2;
 
   Fontos: az ID-kat az alkalmazás indítása után a H2 konzolban vagy a pácienslista
@@ -233,6 +233,3 @@ A H2 konzol elérhető fejlesztői módban: http://localhost:8080/h2-console
 Az MQTT kapcsolat automatikusan újracsatlakozik hálózati kiesés esetén.
 Éles környezetben ajánlott az H2-t PostgreSQL vagy MySQL adatbázisra cserélni,
 és az MQTT brokert saját, hitelesített szerverre váltani.
-
-Az alkalmazás fejlesztője: [Fejlesztő neve]
-Fejlesztői környezet: IntelliJ IDEA, Java 17, Maven, Spring Boot 3
