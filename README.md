@@ -20,10 +20,10 @@ TELEPÍTÉSI ÚTMUTATÓ
 
 Ha a szükséges eszközök még nincsenek telepítve a gépen:
 
-Java Development Kit (JDK) 17+ telepítése:
+Java Development Kit (JDK) 17 telepítése:
 
   Látogass el a https://www.oracle.com/java/technologies/downloads/ oldalra
-  Töltsd le a Windows x64 Installer verziót (JDK 17+)
+  Töltsd le a Windows x64 Installer verziót (JDK 17)
   Futtasd a telepítőt és kövesd az utasításokat
   Ellenőrizd a telepítést: java -version
 
@@ -142,16 +142,17 @@ Ha egy érték kívül esik a tartományon, az alkalmazás RIASZTÁS státuszt r
 
 FELHASZNÁLT TECHNOLÓGIÁK
 
-  Java 17+
-  Spring Boot 3 (webalkalmazás keretrendszer)
+  Java 17
+  Spring Boot 3.4.5 (webalkalmazás keretrendszer)
   Spring Security (BCrypt jelszótitkosítás, hozzáférés-vezérlés)
-  Spring Integration MQTT (Eclipse Paho kliens, TLS kapcsolat)
+  Spring Integration MQTT + Eclipse Paho MQTT kliens 1.2.5 (TLS kapcsolat)
   Thymeleaf (szerver oldali HTML sablon motor)
   Bootstrap 5.1.3 (reszponzív felhasználói felület)
   H2 Database (beépített in-memory adatbázis, fejlesztői módhoz)
+  Spring Data JPA + Hibernate (adatbázis réteg)
   Lombok (getter/setter automatikus generálás)
   Apache Maven (projektmenedzsment és build eszköz)
-  JSON.org (MQTT payload feldolgozás)
+  JSON.org 20240303 (MQTT payload feldolgozás)
   ArduinoJson (ESP32 JSON sorosítás)
   Eclipse Paho / PubSubClient (ESP32 MQTT kliens)
   Wokwi (ESP32 online szimulációs platform)
@@ -186,7 +187,7 @@ platformon futtatható, és valódi MQTT üzeneteket küld a szervernek.
 
   A kódban a PATIENT_IDS[] tömbben kell megadni az adatbázisban lévő beteg ID-kat:
 
-    const int PATIENT_IDS[]  = {8, 9};   // Cseréld le a tényleges beteg ID-kra!
+    const int PATIENT_IDS[]  = {8, 9};   
     const int PATIENT_AGES[] = {65, 42}; // A betegek kora (riasztási küszöbhöz)
     const int PATIENT_COUNT  = 2;
 
@@ -234,5 +235,5 @@ Az MQTT kapcsolat automatikusan újracsatlakozik hálózati kiesés esetén.
 Éles környezetben ajánlott az H2-t PostgreSQL vagy MySQL adatbázisra cserélni,
 és az MQTT brokert saját, hitelesített szerverre váltani.
 
-Az alkalmazás fejlesztője: [Fejlesztő neve]
-Fejlesztői környezet: IntelliJ IDEA, Java 17, Maven, Spring Boot 3
+Az alkalmazás fejlesztője: Páll László
+Fejlesztői környezet: IntelliJ IDEA, Java 17, Maven, Spring Boot 3.4.5
