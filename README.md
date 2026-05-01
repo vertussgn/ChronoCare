@@ -190,9 +190,6 @@ platformon futtatható, és valódi MQTT üzeneteket küld a szervernek.
     const int PATIENT_AGES[] = {65, 42}; 
     const int PATIENT_COUNT  = 2;
 
-  Fontos: az ID-kat az alkalmazás indítása után a H2 konzolban vagy a pácienslista
-  oldalon tudod leellenőrizni (az adatbázis minden indításkor új ID-kat generálhat).
-
   MÉRÉSI CIKLUS MŰKÖDÉSE
 
   A szimulátor 3 másodpercenként küld egy mérést, körbe-körbe váltva a betegek
@@ -219,10 +216,9 @@ platformon futtatható, és valódi MQTT üzeneteket küld a szervernek.
     Topic formátum: patient/{patientId}/measurements
     Payload (JSON): {"type": "blood_pressure", "value": 125.0}
     QoS:            0 (ESP32 oldalon)
-    TLS:            espClient.setInsecure() – tanúsítvány ellenőrzés nélküli TLS
+    TLS:            espClient.setInsecure() 
 
   Megjegyzés: az espClient.setInsecure() Wokwi szimulációhoz elegendő.
-  Valódi éles ESP32 eszköznél CA tanúsítvány ellenőrzés ajánlott.
 
 
 MEGJEGYZÉSEK
