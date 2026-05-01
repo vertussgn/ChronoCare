@@ -229,7 +229,205 @@ MEGJEGYZÉSEK
 
 Az adatbázis H2 in-memory módban fut; az alkalmazás leállításakor az adatok törlődnek.
 A H2 konzol elérhető fejlesztői módban: http://localhost:8080/h2-console
-  JDBC URL: jdbc:h2:mem:chronocaredb  |  Felhasználó: sa  |  Jelszó: (üres)
+  JDBC URL: jdbc:h2:mem:chronocaredb  |  Felhasználó: sa  |  Jelszó: password
 Az MQTT kapcsolat automatikusan újracsatlakozik hálózati kiesés esetén.
 Éles környezetben ajánlott az H2-t PostgreSQL vagy MySQL adatbázisra cserélni,
 és az MQTT brokert saját, hitelesített szerverre váltani.
+
+
+=============================================
+CHRONOCARE – USER GUIDE
+=============================================
+APPLICATION DESCRIPTION
+
+ChronoCare is an IoT-based healthcare monitoring web application designed to record, display, and manage real-time patient data and alerts. The application receives measurement data via the MQTT protocol from ESP32/Wokwi IoT devices and makes it accessible through a web interface for doctors and patients.
+
+Key Features
+Medical Dashboard: View list of patients and individual profiles
+Patient Portal: Access personal measurements and alerts
+MQTT Integration: Real-time IoT data reception with TLS encryption (HiveMQ broker)
+IoT Simulator: Manual measurement submission via the medical interface
+Automatic Alerts: Threshold evaluation based on age
+Biological Validation: Filters invalid measurement data before saving
+Secure Authentication: BCrypt password hashing, role-based access (DOCTOR / PATIENT)
+Built-in Database: H2 in-memory database (development mode)
+INSTALLATION GUIDE
+
+If the required tools are not yet installed:
+
+Install Java Development Kit (JDK) 17+
+Visit: https://www.oracle.com/java/technologies/downloads/
+Download the Windows x64 Installer version (JDK 17+)
+Run the installer and follow the instructions
+
+Verify installation:
+
+java -version
+Install Apache Maven
+Visit: https://maven.apache.org/download.cgi
+Download the Binary zip archive
+Extract it (e.g., to C:\Program Files\Maven)
+
+Add to PATH:
+
+C:\Program Files\Maven\bin
+
+Verify installation:
+
+mvn -version
+Install IntelliJ IDEA
+Visit: https://www.jetbrains.com/idea/download/
+Download the Community (free) version
+Run the installer and follow the instructions
+SYSTEM REQUIREMENTS
+Operating System: Windows 10 / Windows 11 / Linux / macOS (64-bit)
+Java Development Kit (JDK) 17 or newer
+Apache Maven 3.8 or newer
+Internet connection (MQTT broker: broker.hivemq.com:8883)
+Minimum RAM: 512 MB
+Recommended RAM: 1 GB or more
+Free disk space: at least 200 MB
+IMPORTING THE PROJECT INTO INTELLIJ IDEA
+Extract the zip file to a folder
+Open IntelliJ IDEA
+Select File > Open
+Navigate to the extracted ChronoCare-main folder
+Click OK
+IntelliJ will automatically detect the Maven project
+Wait for dependencies to download (may take a few minutes)
+
+If Maven sync does not start automatically:
+
+Right-click pom.xml → Maven → Reload Project
+RUNNING THE APPLICATION FROM THE DEVELOPMENT ENVIRONMENT
+
+Locate the main class:
+
+src/main/java/com/chronocare/chronocare/ChronoCareApplication.java
+Right-click → Run 'ChronoCareApplication.main()'
+OR click the green run icon
+
+After startup, the application is available at:
+
+http://localhost:8080
+BUILT-IN TEST ACCOUNTS
+
+Automatically created on first run:
+
+Doctor 1: username: house | password: admin
+Doctor 2: username: strange | password: admin
+Patient 1: username: janos | password: 1234
+Patient 2: username: maria | password: 1234
+BUILDING THE JAR FILE
+
+Open terminal in the project root:
+
+mvn clean package
+
+Generated file:
+
+target/chronocare-0.0.1-SNAPSHOT.jar
+
+Run the JAR:
+
+java -jar target/chronocare-0.0.1-SNAPSHOT.jar
+MQTT CONFIGURATION
+Broker URL: ssl://broker.hivemq.com:8883
+Protocol: TLSv1.3
+Topic: patient/{patientId}/measurements
+QoS: 1 (at least once delivery)
+Keep-alive: 60 seconds
+Connection timeout: 10 seconds
+Example JSON Payloads
+{"type": "blood_pressure", "value": 125.0}
+{"type": "heart_rate", "value": 72.0}
+{"type": "blood_sugar", "value": 5.2}
+{"type": "spo2", "value": 97.0}
+{"type": "temperature", "value": 36.8}
+NORMAL RANGES AND ALERT THRESHOLDS
+Blood Pressure (systolic)
+< 18 years: 90–120 mmHg
+18–64 years: 100–140 mmHg
+≥ 65 years: 100–150 mmHg
+Other Measurements
+Heart rate: 60–100 BPM
+Blood sugar: 3.9–7.8 mmol/L
+Oxygen saturation: ≥ 90% (SpO₂)
+Body temperature: 36.0–38.0 °C
+
+Values outside these ranges trigger alerts (highlighted in red).
+
+TECHNOLOGIES USED
+Java 17+
+Spring Boot 3
+Spring Security (BCrypt, role-based access)
+Spring Integration MQTT (Eclipse Paho, TLS)
+Thymeleaf
+Bootstrap 5.1.3
+H2 Database
+Lombok
+Apache Maven
+JSON.org
+ArduinoJson
+Eclipse Paho / PubSubClient
+Wokwi
+WOKWI IOT SIMULATOR SETUP
+Required Libraries (libraries.txt)
+WiFiClientSecure
+PubSubClient
+ArduinoJson
+Hardware Configuration
+Microcontroller: ESP32 DevKit
+Input: 1 potentiometer (GPIO34 / ADC)
+Connection: TLS-secured WiFi (Wokwi-GUEST)
+RUNNING THE SIMULATOR
+Visit: https://wokwi.com
+Create a new ESP32 project
+Paste the sketch.ino content
+Add required libraries
+Add a potentiometer (GPIO34)
+Click ▶ Start Simulation
+Monitor MQTT messages in Serial Monitor
+PATIENT ID CONFIGURATION
+const int PATIENT_IDS[]  = {8, 9};
+const int PATIENT_AGES[] = {65, 42};
+const int PATIENT_COUNT  = 2;
+
+Note: IDs may change on each startup. Check via H2 console or patient list.
+
+MEASUREMENT CYCLE
+
+The simulator sends data every 3 seconds:
+
+Blood pressure – Patient A
+Blood pressure – Patient B
+Heart rate – Patient A
+Heart rate – Patient B
+... (5 types × 2 patients = 10-cycle loop)
+Value ranges (based on potentiometer)
+Blood pressure: 100–140 mmHg
+Heart rate: 60–100 BPM
+Blood sugar: 3.9–7.8 mmol/L
+SpO₂: 90–100%
+Temperature: 36.0–38.0 °C
+MQTT TOPIC STRUCTURE
+Direction: ESP32 → HiveMQ → Spring Boot server
+Topic: patient/{patientId}/measurements
+Payload: JSON
+QoS: 0 (ESP32 side)
+TLS: espClient.setInsecure() (no certificate validation)
+
+Note: For production, certificate validation is recommended.
+
+NOTES
+H2 database runs in-memory (data is lost on shutdown)
+H2 console: http://localhost:8080/h2-console
+JDBC URL: jdbc:h2:mem:chronocaredb
+User: sa
+Password: (empty)
+MQTT reconnects automatically after connection loss
+For production:
+Replace H2 with PostgreSQL or MySQL
+Use a private, authenticated MQTT broker
+
+If you want, I can also turn this into a polished PDF, README.md, or documentation site.
