@@ -1,230 +1,112 @@
-=======================================================================================================================================
-============================================= CHRONOCARE – OLVASÁSI ÚTMUTATÓ
-=======================================================================================================================================
-ALKALMAZÁS LEÍRÁSA
+============================================================
+  ChronoCare – IoT alapú egészségügyi monitoring rendszer
+  Páll László – Szakdolgozat, Nyíregyházi Egyetem, 2025
+============================================================
 
-A ChronoCare egy IoT alapú egészségügyi monitoring webalkalmazás, amely valós idejű betegadatok rögzítésére, megjelenítésére és riasztások kezelésére szolgál. Az alkalmazás MQTT protokollon keresztül fogadja az ESP32/Wokwi IoT eszközök által küldött mérési adatokat, és ezeket webes felületen teszi elérhetővé orvosok és betegek számára.
-
-Főbb funkciók:
-
-Orvosi műszerfal: páciensek listája és egyéni adatlapok megjelenítése
-Páciens portál: saját mérési adatok és riasztások megtekintése
-MQTT integráció: valós idejű IoT adatfogadás TLS titkosítással (HiveMQ broker)
-IoT Szimulátor: orvosi felületen manuális mérésbeküldési lehetőség
-Automatikus riasztás: életkor-alapú küszöbértékek vizsgálata
-Biológiai validáció: érvénytelen mérési adatok szűrése mentés előtt
-Biztonságos belépés: BCrypt jelszótitkosítás, szerepkör-alapú hozzáférés (DOCTOR / PATIENT)
-Beépített adatbázis: H2 in-memory adatbázis (fejlesztői mód)
-
-
-TELEPÍTÉSI ÚTMUTATÓ
-
-Ha a szükséges eszközök még nincsenek telepítve a gépen:
-
-Java Development Kit (JDK) 17+ telepítése:
-
-  Látogass el a https://www.oracle.com/java/technologies/downloads/ oldalra
-  Töltsd le a Windows x64 Installer verziót (JDK 17+)
-  Futtasd a telepítőt és kövesd az utasításokat
-  Ellenőrizd a telepítést: java -version
-
-Apache Maven telepítése:
-
-  Látogass el a https://maven.apache.org/download.cgi oldalra
-  Töltsd le a Binary zip archive fájlt
-  Csomagold ki pl. C:\Program Files\Maven mappába
-  Add hozzá a PATH környezeti változóhoz: C:\Program Files\Maven\bin
-  Ellenőrizd a telepítést: mvn -version
-
-IntelliJ IDEA telepítése:
-
-  Látogass el a https://www.jetbrains.com/idea/download/ oldalra
-  Töltsd le a Community (ingyenes) verziót
-  Futtasd a telepítőt és kövesd az utasításokat
-
+FEJLESZTŐKÖRNYEZET
+------------------
+  Java verzió  : Java 17 LTS
+  Keretrendszer: Spring Boot 3.4.5
+  Build eszköz : Apache Maven 3.x
+  IDE          : IntelliJ IDEA (Ultimate ajánlott)
+  Adatbázis    : H2 (fájlalapú, beágyazott)
+  MQTT broker  : HiveMQ publikus broker (ssl://broker.hivemq.com:8883)
+  IoT szimulátor: Wokwi (ESP32 online szimulátor)
 
 RENDSZERKÖVETELMÉNYEK
+---------------------
+  - Java 17 vagy újabb (https://adoptium.net/)
+  - Apache Maven 3.8 vagy újabb
+  - Internetkapcsolat (MQTT broker eléréshez)
 
-Operációs rendszer: Windows 10 / Windows 11 / Linux / macOS (64 bit)
-Java Development Kit (JDK) 17 vagy újabb verzió
-Apache Maven 3.8 vagy újabb verzió
-Internetkapcsolat (MQTT broker elérése: broker.hivemq.com:8883)
-Minimális RAM: 512 MB
-Ajánlott RAM: 1 GB vagy több
-Szabad lemezterület: minimum 200 MB
+PROJEKT MEGNYITÁSA
+------------------
+  1. Töltse le vagy csomagolja ki a projektet.
+  2. Nyissa meg IntelliJ IDEA-ban:
+       File → Open → válassza a projekt gyökérmappáját (pom.xml-t tartalmazó mappa)
+  3. Maven automatikusan letölti a függőségeket.
 
+LOKÁLIS FUTTATÁS
+----------------
+  Parancssorból (Maven segítségével):
 
-A PROJEKT IMPORTÁLÁSA INTELLIJ IDEA-BA
+    cd chronocare
+    mvn spring-boot:run
 
-1. Csomagold ki a zip fájlt egy tetszőleges mappába
-2. Nyisd meg az IntelliJ IDEA fejlesztői környezetet
-3. Válaszd a File > Open menüpontot
-4. Navigálj a kicsomagolt "ChronoCare-main" mappába
-5. Kattints az OK gombra
-6. Az IntelliJ IDEA automatikusan felismeri a Maven projektet
-7. Várd meg, amíg a Maven letölti a szükséges függőségeket
-   (ez első alkalommal néhány percet vehet igénybe)
-8. Ha a Maven szinkronizálás nem indul el automatikusan:
-   jobb klikk a pom.xml fájlra > Maven > Reload Project
+  Vagy IntelliJ IDEA-ból:
+    Futtassa a ChronoCareApplication.java főosztályt.
 
+  Az alkalmazás elindul a következő címen:
+    http://localhost:8080
 
-AZ ALKALMAZÁS FUTTATÁSA FEJLESZTŐI KÖRNYEZETBŐL
+ALAPÉRTELMEZETT BELÉPÉSI ADATOK
+--------------------------------
+  Az adatbázis az első indításkor automatikusan feltöltődik mintaadatokkal.
 
-A projekt betöltése után keresd meg a főosztályt:
-  src/main/java/com/chronocare/chronocare/ChronoCareApplication.java
+  Orvos fiókok:
+    Felhasználónév: house    Jelszó: admin   (Dr. House)
+    Felhasználónév: strange  Jelszó: admin   (Dr. Strange)
 
-Jobb klikk a fájlra > Run 'ChronoCareApplication.main()'
-VAGY nyisd meg a fájlt és kattints a zöld nyíl ikonra a szerkesztő mellett.
+  Páciens fiókok:
+    Felhasználónév: janos    Jelszó: 1234    (Teszt János, 65 év)
+    Felhasználónév: maria    Jelszó: 1234    (Minta Mária, 42 év)
 
-Az alkalmazás elindulás után elérhető: http://localhost:8080
+  Új páciens regisztrálható a főoldalon keresztül is.
 
+H2 ADATBÁZIS KONZOL (fejlesztői)
+---------------------------------
+  Cím  : http://localhost:8080/h2-console
+  JDBC : jdbc:h2:file:./data/chronodb
+  User : sa
+  Jelszó: (üres)
 
-BEÉPÍTETT TESZTFIÓKOK (automatikusan létrehozva)
+MQTT KAPCSOLAT
+--------------
+  A rendszer TLS titkosított MQTT kapcsolatot használ:
+    Broker : ssl://broker.hivemq.com:8883
+    Topic  : patient/{patientId}/measurements
+    QoS    : 1
 
-  Orvos 1:    felhasználónév: house    | jelszó: admin
-  Orvos 2:    felhasználónév: strange  | jelszó: admin
-  Beteg 1:    felhasználónév: janos    | jelszó: 1234
-  Beteg 2:    felhasználónév: maria    | jelszó: 1234
+  Az IoT szimulátort (Wokwi ESP32) a GitHub repository
+  /wokwi mappájában található sketch.ino fájl tartalmazza.
+  Wokwi szimulátor: https://wokwi.com
 
-Ezek az adatok az alkalmazás első indításakor automatikusan bekerülnek az adatbázisba.
+ADATBÁZIS INICIALIZÁLÁS (localhost kiváltás)
+---------------------------------------------
+  A H2 fájlalapú adatbázis automatikusan létrejön az első
+  indításkor a ./data/chronodb útvonalon. Nem szükséges
+  külön adatbázisszerver telepítése.
 
+  Ha friss adatbázissal szeretne indítani, törölje a
+  ./data/ mappát, majd indítsa újra az alkalmazást.
 
-LEFORDÍTOTT JAR FÁJL LÉTREHOZÁSA
+PROJEKT STRUKTÚRA
+-----------------
+  src/main/java/com/chronocare/chronocare/
+    ├── controller/
+    │     ├── DashboardController.java
+    │     └── HomeController.java
+    ├── model/
+    │     ├── Doctor.java
+    │     ├── Patient.java
+    │     └── HealthMeasurement.java
+    ├── repository/
+    │     ├── DoctorRepository.java
+    │     ├── PatientRepository.java
+    │     └── MeasurementRepository.java
+    ├── service/
+    │     ├── MonitoringService.java
+    │     ├── MQTTconfig.java
+    │     ├── MQTTListener.java
+    │     └── SecurityConfig.java
+    └── ChronoCareApplication.java
 
-Nyisd meg a terminált a projekt gyökérmappájában
-(IntelliJ IDEA-ban: View > Tool Windows > Terminal)
+  src/main/resources/
+    ├── templates/   (Thymeleaf HTML sablonok)
+    └── application.properties
 
-Futtasd le a következő parancsot:
+GITHUB REPOSITORY
+-----------------
+  https://github.com/vertussgn/ChronoCare
 
-  mvn clean package
-
-A lefordított JAR fájl a target/ mappában jön létre: target/chronocare-0.0.1-SNAPSHOT.jar
-
-A JAR fájl futtatása:
-
-  java -jar target/chronocare-0.0.1-SNAPSHOT.jar
-
-
-MQTT KONFIGURÁCIÓ
-
-Az alkalmazás a HiveMQ publikus brokert használja TLS titkosított kapcsolaton keresztül.
-
-  Broker URL:  ssl://broker.hivemq.com:8883
-  Protokoll:   TLSv1.3
-  Topic:       patient/{patientId}/measurements
-  QoS szint:   1 (legalább egyszer kézbesítve)
-  Keep-alive:  60 másodperc
-  Kapcsolódási timeout: 10 másodperc
-
-Az IoT eszköznek (ESP32 / Wokwi) JSON formátumban kell küldenie az adatokat:
-
-  {"type": "blood_pressure", "value": 125.0}
-  {"type": "heart_rate",     "value": 72.0}
-  {"type": "blood_sugar",    "value": 5.2}
-  {"type": "spo2",           "value": 97.0}
-  {"type": "temperature",    "value": 36.8}
-
-
-NORMÁL MÉRÉSI TARTOMÁNYOK ÉS RIASZTÁSI KÜSZÖBÖK
-
-  Vérnyomás (szisztolés):
-    < 18 év:   90–120 Hgmm
-    18–64 év:  100–140 Hgmm
-    ≥ 65 év:   100–150 Hgmm
-
-  Pulzus:      60–100 BPM
-  Vércukor:    3,9–7,8 mmol/l
-  Véroxigén:   ≥ 90 % (SpO₂)
-  Testhő:      36,0–38,0 °C
-
-Ha egy érték kívül esik a tartományon, az alkalmazás RIASZTÁS státuszt rendel hozzá,
-és a mérési előzményekben piros kiemeléssel jelzi.
-
-
-FELHASZNÁLT TECHNOLÓGIÁK
-
-  Java 17+
-  Spring Boot 3 (webalkalmazás keretrendszer)
-  Spring Security (BCrypt jelszótitkosítás, hozzáférés-vezérlés)
-  Spring Integration MQTT (Eclipse Paho kliens, TLS kapcsolat)
-  Thymeleaf (szerver oldali HTML sablon motor)
-  Bootstrap 5.1.3 (reszponzív felhasználói felület)
-  H2 Database (beépített in-memory adatbázis, fejlesztői módhoz)
-  Lombok (getter/setter automatikus generálás)
-  Apache Maven (projektmenedzsment és build eszköz)
-  JSON.org (MQTT payload feldolgozás)
-  ArduinoJson (ESP32 JSON sorosítás)
-  Eclipse Paho / PubSubClient (ESP32 MQTT kliens)
-  Wokwi (ESP32 online szimulációs platform)
-
-
-WOKWI IoT SZIMULÁTOR BEÁLLÍTÁSA
-
-A ChronoCare rendszerhez tartozik egy ESP32 alapú hardver szimulátor, amely Wokwi online
-platformon futtatható, és valódi MQTT üzeneteket küld a szervernek.
-
-  Szükséges könyvtárak (Wokwi libraries.txt):
-    WiFiClientSecure
-    PubSubClient
-    ArduinoJson
-
-  Hardver konfiguráció:
-    Mikrokontroller:  ESP32 DevKit
-    Bemenet:          1 db potméter (analóg, GPIO34 / ADC pin)
-    Kapcsolat:        TLS titkosított WiFi (Wokwi-GUEST hálózat)
-
-  A SZIMULÁTOR FUTTATÁSA WOKWI-N
-
-  1. Látogass el a https://wokwi.com oldalra
-  2. Hozz létre új ESP32 projektet
-  3. Illeszd be a sketch.ino tartalmát a szerkesztőbe
-  4. Az libraries.txt fájlba add meg a szükséges könyvtárakat
-  5. Adj hozzá egy potmétert a diagramhoz (GPIO34-re kötve)
-  6. Kattints a ▶ Start Simulation gombra
-  7. A Serial Monitor ablakban követheted az MQTT küldéseket
-
-  BETEG AZONOSÍTÓK BEÁLLÍTÁSA
-
-  A kódban a PATIENT_IDS[] tömbben kell megadni az adatbázisban lévő beteg ID-kat:
-
-    const int PATIENT_IDS[]  = {8, 9};   
-    const int PATIENT_AGES[] = {65, 42}; 
-    const int PATIENT_COUNT  = 2;
-
-  MÉRÉSI CIKLUS MŰKÖDÉSE
-
-  A szimulátor 3 másodpercenként küld egy mérést, körbe-körbe váltva a betegek
-  és a mérési típusok között:
-
-    Ciklus 1:  blood_pressure  – Beteg A
-    Ciklus 2:  blood_pressure  – Beteg B
-    Ciklus 3:  heart_rate      – Beteg A
-    Ciklus 4:  heart_rate      – Beteg B
-    ... (5 típus × 2 beteg = 10 ciklusonként ismétlődik)
-
-  Az értékeket a potméter állása határozza meg:
-    Vérnyomás:      100–140 Hgmm  (potméter alapján)
-    Pulzus:         60–100 BPM
-    Vércukor:       3,9–7,8 mmol/l
-    Véroxigén:      90–100 %
-    Testhőmérséklet: 36,0–38,0 °C
-
-  A Serial Monitorban a program előre jelzi, hogy várható-e riasztás a szerveren.
-
-  MQTT TOPIC STRUKTÚRA (ESP32 → Szerver)
-
-    Küldés iránya:  ESP32 → broker.hivemq.com:8883 → Spring Boot szerver
-    Topic formátum: patient/{patientId}/measurements
-    Payload (JSON): {"type": "blood_pressure", "value": 125.0}
-    QoS:            0 (ESP32 oldalon)
-    TLS:            espClient.setInsecure() 
-
-  Megjegyzés: az espClient.setInsecure() Wokwi szimulációhoz elegendő.
-
-
-MEGJEGYZÉSEK
-
-Az adatbázis H2 in-memory módban fut; az alkalmazás leállításakor az adatok törlődnek.
-A H2 konzol elérhető fejlesztői módban: http://localhost:8080/h2-console
-  JDBC URL: jdbc:h2:mem:chronocaredb  |  Felhasználó: sa  |  Jelszó: password
-Az MQTT kapcsolat automatikusan újracsatlakozik hálózati kiesés esetén.
+============================================================
