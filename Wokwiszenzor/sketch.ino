@@ -3,7 +3,7 @@
  * TLS titkosított MQTT kapcsolat (port 8883, ssl://)
  */
 #include <WiFi.h>
-#include <WiFiClientSecure.h>        // TLS: WiFiClientSecure a sima WiFiClient helyett
+#include <WiFiClientSecure.h>        
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
 
@@ -16,8 +16,6 @@ const int   MQTT_PORT     = 8883;               //TLS port (volt: 1883)
 // Betegek
 const int PATIENT_IDS[]   = {8, 9};  // Melyik beteg (ID alapján)
 const int PATIENT_COUNT   = 2;       // FIX: 2 beteg, nem 1
-
-const int PATIENT_AGES[]  = {65, 42};
 
 const int POT_PIN         = 34;
 
@@ -93,12 +91,6 @@ void sendMeasurement(int patientId, const char* type, float value) {
   Serial.println(ok ? "Küldés: SIKERES ✓ (TLS)" : "Küldés: SIKERTELEN ✗");
 }
 
-float getMaxSystolicByAge(int age) {
-  if (age < 18)  return 120.0f;
-  if (age < 65)  return 140.0f;
-  return 150.0f;
-}
-
 // ─────────────────────────────────────────────────────────────
 void setup() {
   Serial.begin(115200);
@@ -130,22 +122,19 @@ void loop() {
     // FIX: PATIENT_COUNT = 2, ezért mindkét beteg kap adatot
     int patientIndex = cycleIndex % PATIENT_COUNT;
     int patientId    = PATIENT_IDS[patientIndex];
-    int patientAge   = PATIENT_AGES[patientIndex];
     const char* type = TYPES[cycleIndex / PATIENT_COUNT];
 
     int raw = analogRead(POT_PIN);
     float value;
 
-    if (String(type) == "blood_pressure") {
+      if (String(type) == "blood_pressure") {
       value = (float)map(raw, 0, 4095, 100, 140);
+      Serial.println("\n[Ciklus " + String(cycleIndex) + "] Vérnyomás – Beteg: " + String(patientId));
 
-      float maxLimit = getMaxSystolicByAge(patientAge);
-      Serial.println("\n[Ciklus " + String(cycleIndex) + "] Vérnyomás – Beteg: " + String(patientId) + " (kor: " + String(patientAge) + ")");
-      Serial.println("Életkor-alapú max limit: " + String(maxLimit) + " Hgmm");
-      if (value > maxLimit || value < 100.0)
+      if (value > 140.0 || value < 100.0)
         Serial.println("⚠ Várható riasztás a szerveren!");
       else
-        Serial.println("✓ Normál tartomány (100–" + String((int)maxLimit) + " Hgmm)");
+        Serial.println("✓ Normál tartomány (100–140 Hgmm)");
 
     } else if (String(type) == "heart_rate") {
       value = (float)map(raw, 0, 4095, 60, 100);
